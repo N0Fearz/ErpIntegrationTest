@@ -17,7 +17,7 @@ pipeline {
       
     stage('Test'){
       steps{
-        sh 'dotnet test IntegrationTestRepo.sln --configuration Release'
+        sh 'dotnet test --configuration Release'
       }
     }
   }
