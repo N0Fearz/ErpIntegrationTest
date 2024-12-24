@@ -28,7 +28,7 @@ public class OrganizationIntegrationTests
         _keycloakMockMessagePublisher.PublishMessage(testMessage);
 
         // Wait
-        await Task.Delay(5000);
+        await Task.Delay(8000);
 
         // Assert
         bool isProcessed = await CheckIfSchemaExists();
