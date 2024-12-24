@@ -5,6 +5,7 @@ using DotNet.Testcontainers.Networks;
 using Npgsql;
 using Testcontainers.RabbitMq;
 using Testcontainers.PostgreSql;
+using DotNet.Testcontainers;
 
 namespace IntegrationTestsRepo.IntegrationTests;
 

@@ -1,15 +1,16 @@
 ﻿using System.Text;
 using RabbitMQ.Client;
+using Testcontainers.RabbitMq;
 
 namespace IntegrationTestsRepo.IntegrationTests;
 
 public class KeycloakMockMessagePublisher
 {
-    public void PublishMessage(string message)
+    public void PublishMessage(string message, string hostname)
     {
         var factory = new ConnectionFactory
         {
-            HostName = "localhost",
+            HostName = hostname,
             UserName = "guest",
             Password = "guest"
         };
