@@ -36,8 +36,8 @@ public class MicroservicesSetup : IAsyncDisposable
             .WithImage("rabbitmq:3-management") 
             .WithUsername("testuser")
             .WithPassword("testpassword")
-            .WithPortBinding(5672, false)
-            .WithPortBinding(15672, false)
+            .WithPortBinding(5672, true)
+            .WithPortBinding(15672, true)
             .WithNetwork(_network)
             .WithNetworkAliases("rabbitmq")
             .Build();
@@ -48,7 +48,7 @@ public class MicroservicesSetup : IAsyncDisposable
         Console.WriteLine($"RabbitMQ Port: {RabbitMqContainer.GetMappedPublicPort(5672)}");
         
         PostgresContainer = new PostgreSqlBuilder()
-            .WithPortBinding(5432, false)
+            .WithPortBinding(5432, true)
             .WithDatabase("organizations")
             .WithUsername("postgres")
             .WithPassword("postgres")
