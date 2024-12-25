@@ -6,11 +6,12 @@ namespace IntegrationTestsRepo.IntegrationTests;
 
 public class KeycloakMockMessagePublisher
 {
-    public void PublishMessage(string message, string hostname)
+    public void PublishMessage(string message, string hostname, int port)
     {
         var factory = new ConnectionFactory
         {
             HostName = hostname,
+            Port = port,
             UserName = "guest",
             Password = "guest"
         };
