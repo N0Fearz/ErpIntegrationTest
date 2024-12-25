@@ -12,8 +12,8 @@ public class KeycloakMockMessagePublisher
         {
             HostName = hostname,
             Port = port,
-            UserName = "guest",
-            Password = "guest"
+            UserName = "testuser",
+            Password = "testpassword"
         };
 
         using var connection = factory.CreateConnection();
