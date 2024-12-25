@@ -49,6 +49,7 @@ public class MicroservicesSetup : IAsyncDisposable
         
         PostgresContainer = new PostgreSqlBuilder()
             .WithPortBinding(5432, true)
+            .WithCleanUp(false)
             .WithDatabase("organizations")
             .WithUsername("postgres")
             .WithPassword("postgres")
@@ -60,6 +61,7 @@ public class MicroservicesSetup : IAsyncDisposable
         
         ArticleService = new ContainerBuilder()
             .WithImage("casgoorman/articleservice:latest")
+            .WithCleanUp(false)
             .WithExposedPort(8080)
             .WithPortBinding(0, 8080)
             .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Production")
@@ -74,6 +76,7 @@ public class MicroservicesSetup : IAsyncDisposable
             
         OrganizationService = new ContainerBuilder()
             .WithImage("casgoorman/organizationservice:latest")
+            .WithCleanUp(false)
             .WithExposedPort(8080)
             .WithPortBinding(0, 8080)
             .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Production")
