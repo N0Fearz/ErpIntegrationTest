@@ -32,7 +32,7 @@ public class OrganizationIntegrationTests
             );
 
         // Wait
-        await Task.Delay(8000);
+        await Task.Delay(2000);
 
         // Assert
         bool isProcessed = await CheckIfSchemaExists();
@@ -63,7 +63,7 @@ public class OrganizationIntegrationTests
 
             var result = await command.ExecuteScalarAsync();
 
-            await Task.Delay(500); // Simuleer DB-check
+            await Task.Delay(5000); // Simuleer DB-check
             // De query retourneert een bool: true als het schema bestaat, anders false.
             return result is bool exists && exists;
         }
