@@ -34,6 +34,7 @@ public class MicroservicesSetup : IAsyncDisposable
         
         RabbitMqContainer = new RabbitMqBuilder()
             .WithImage("rabbitmq:3-management") 
+            .WithCleanUp(false)
             .WithUsername("testuser")
             .WithPassword("testpassword")
             .WithPortBinding(5672, true)
