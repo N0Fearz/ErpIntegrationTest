@@ -5,7 +5,6 @@ using DotNet.Testcontainers.Networks;
 using Npgsql;
 using Testcontainers.RabbitMq;
 using Testcontainers.PostgreSql;
-using DotNet.Testcontainers;
 
 namespace IntegrationTestsRepo.IntegrationTests;
 
@@ -32,7 +31,7 @@ public class MicroservicesSetup : IAsyncDisposable
             .Build();
 
         await _network.CreateAsync();
-
+        
         RabbitMqContainer = new RabbitMqBuilder()
             .WithImage("rabbitmq:3-management") 
             .WithUsername("guest")
