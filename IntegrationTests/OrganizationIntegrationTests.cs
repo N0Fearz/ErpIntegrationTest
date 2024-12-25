@@ -25,7 +25,7 @@ public class OrganizationIntegrationTests
         const string testMessage = "{\n\"@class\" : \"com.github.aznamier.keycloak.event.provider.EventAdminNotificationMqMsg\",\n\"time\" : 1734471669619,\n\"realmId\" : \"f7976e0d-14ab-4ea0-8a87-032f9c16151f\",\n\"authDetails\" : {\n\"realmId\" : \"d5061ec1-18e9-4430-89fe-068f08c9b5ff\",\n\"realmName\" : \"master\",\n\"clientId\" : \"03a6c6de-20e5-43b5-9bca-da81d4fef626\",\n\"userId\" : \"f4ff4e89-6fe2-45f8-9ecf-384f9bb0ab8d\",\n\"ipAddress\" : \"10.42.0.1\"\n},\n\"resourceType\" : \"ORGANIZATION\",\n\"operationType\" : \"CREATE\",\n\"resourcePath\" : \"organizations/2b36c94f-25c5-4d03-83c6-1429a7371413\",\n\"representation\" : \"{\\\"id\\\":\\\"0ba94660-861a-45af-a01a-344c04fbfc1b\\\",\\\"name\\\":\\\"TestOrganization\\\",\\\"alias\\\":\\\"test1234\\\",\\\"enabled\\\":true,\\\"description\\\":\\\"\\\",\\\"redirectUrl\\\":\\\"\\\",\\\"attributes\\\":{},\\\"domains\\\":[{\\\"name\\\":\\\"idk.com\\\",\\\"verified\\\":false}]}\",\n\"resourceTypeAsString\" : \"ORGANIZATION\"\n}";
 
         // Act
-        _keycloakMockMessagePublisher.PublishMessage(testMessage, _microservicesSetup.RabbitMqContainer.Hostname, _microservicesSetup.RabbitMqContainer.GetMappedPublicPort(5672));
+        _keycloakMockMessagePublisher.PublishMessage(testMessage, _microservicesSetup.RabbitMqContainer.IpAddress, _microservicesSetup.RabbitMqContainer.GetMappedPublicPort(5672));
 
         // Wait
         await Task.Delay(8000);
