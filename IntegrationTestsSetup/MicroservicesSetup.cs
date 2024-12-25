@@ -42,6 +42,10 @@ public class MicroservicesSetup : IAsyncDisposable
             .WithNetworkAliases("rabbitmq")
             .Build();
         await RabbitMqContainer.StartAsync();
+        await Task.Delay(TimeSpan.FromSeconds(10));
+        
+        Console.WriteLine($"RabbitMQ Host: {RabbitMqContainer.Hostname}");
+        Console.WriteLine($"RabbitMQ Port: {RabbitMqContainer.GetMappedPublicPort(5672)}");
         
         PostgresContainer = new PostgreSqlBuilder()
             .WithPortBinding(5432, false)
