@@ -43,7 +43,6 @@ public class MicroservicesSetup : IAsyncDisposable
             .WithNetworkAliases("rabbitmq")
             .Build();
         await RabbitMqContainer.StartAsync();
-        await Task.Delay(TimeSpan.FromSeconds(10));
         
         Console.WriteLine($"RabbitMQ Host: {RabbitMqContainer.Hostname}");
         Console.WriteLine($"RabbitMQ Port: {RabbitMqContainer.GetMappedPublicPort(5672)}");
@@ -60,21 +59,6 @@ public class MicroservicesSetup : IAsyncDisposable
         await PostgresContainer.StartAsync();
         await CreateAdditionalDatabasesAsync();
         
-        ArticleService = new ContainerBuilder()
-            .WithImage("casgoorman/articleservice:latest")
-            .WithCleanUp(false)
-            .WithExposedPort(8080)
-            .WithPortBinding(0, 8080)
-            .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Production")
-            .WithEnvironment("DISABLE_AUTH", "true")
-            .WithEnvironment("RabbitMQ__HostName", "rabbitmq")
-            .WithEnvironment("RabbitMQ__UserName", "testuser")
-            .WithEnvironment("RabbitMQ__Password", "testpassword")
-            .WithEnvironment("ConnectionStrings__ArticleDB", _articleDbString)
-            .WithNetwork(_network)
-            .WithNetworkAliases("articleservice")
-            .Build();
-            
         OrganizationService = new ContainerBuilder()
             .WithImage("casgoorman/organizationservice:latest")
             .WithCleanUp(false)
@@ -90,8 +74,22 @@ public class MicroservicesSetup : IAsyncDisposable
             .WithNetwork(_network)
             .WithNetworkAliases("organizationservice")
             .Build();
-
-        await Task.WhenAll(ArticleService.StartAsync(), OrganizationService.StartAsync());
+        await OrganizationService.StartAsync();
+        ArticleService = new ContainerBuilder()
+            .WithImage("casgoorman/articleservice:latest")
+            .WithCleanUp(false)
+            .WithExposedPort(8080)
+            .WithPortBinding(0, 8080)
+            .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Production")
+            .WithEnvironment("DISABLE_AUTH", "true")
+            .WithEnvironment("RabbitMQ__HostName", "rabbitmq")
+            .WithEnvironment("RabbitMQ__UserName", "testuser")
+            .WithEnvironment("RabbitMQ__Password", "testpassword")
+            .WithEnvironment("ConnectionStrings__ArticleDB", _articleDbString)
+            .WithNetwork(_network)
+            .WithNetworkAliases("articleservice")
+            .Build();
+        await ArticleService.StartAsync();
         ArticleServicePort = ArticleService.GetMappedPublicPort(8080);
     }
     

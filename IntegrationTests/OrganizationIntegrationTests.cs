@@ -37,6 +37,7 @@ public class OrganizationIntegrationTests
 
         // Assert
         bool isProcessed = await CheckIfSchemaExists();
+        await Task.Delay(5000);
         Assert.True(isProcessed, "Het bericht is niet correct verwerkt.");
     }
     
