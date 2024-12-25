@@ -36,8 +36,8 @@ public class MicroservicesSetup : IAsyncDisposable
             .WithImage("rabbitmq:3-management") 
             .WithUsername("guest")
             .WithPassword("guest")
-            .WithPortBinding(5672, false)
-            .WithPortBinding(15672, false)
+            .WithPortBinding(5672, true)
+            .WithPortBinding(15672, true)
             .WithNetwork(_network)
             .WithNetworkAliases("rabbitmq")
             .Build();
