@@ -127,10 +127,10 @@ public class MicroservicesSetup : IAsyncDisposable
         await using var command = new NpgsqlCommand(createDbSql, connection);
         await command.ExecuteNonQueryAsync();
 
-        var connectionStrongCorrectHost = adminConnectionString.Replace("127.0.0.1", "postgres");
-        DatabaseOrdersConnectionString = connectionStrongCorrectHost.Replace("organizations", "orders") + ";";
-        DatabaseArticlesConnectionString = connectionStrongCorrectHost.Replace("organizations", "articles") + ";";
-        DatabaseOrganizationConnectionString = connectionStrongCorrectHost;
+        
+        DatabaseOrdersConnectionString = "Host=postgres;Port=5432;Database=orders;Username=postgres;Password=postgres;";
+        DatabaseArticlesConnectionString = "Host=postgres;Port=5432;Database=articles;Username=postgres;Password=postgres;";
+        DatabaseOrganizationConnectionString = "Host=postgres;Port=5432;Database=organizations;Username=postgres;Password=postgres;";
     }
 
     public async Task StopAsync()
@@ -139,6 +139,7 @@ public class MicroservicesSetup : IAsyncDisposable
         RabbitMqContainer.DisposeAsync();
         ArticleService.DisposeAsync();
         OrganizationService.DisposeAsync();
+        OrderService.DisposeAsync();
         _network.DisposeAsync();
     }
     public async ValueTask DisposeAsync()
