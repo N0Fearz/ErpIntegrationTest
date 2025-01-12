@@ -49,7 +49,7 @@ public class MicroservicesSetup : IAsyncDisposable
         Console.WriteLine($"RabbitMQ Port: {RabbitMqContainer.GetMappedPublicPort(5672)}");
         
         PostgresContainer = new PostgreSqlBuilder()
-            .WithPortBinding(5432, false)
+            .WithPortBinding(5432, true)
             .WithDatabase("organizations")
             .WithUsername("postgres")
             .WithPassword("postgres")
