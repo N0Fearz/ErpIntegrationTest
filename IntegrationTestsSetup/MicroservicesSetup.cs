@@ -55,7 +55,6 @@ public class MicroservicesSetup : IAsyncDisposable
             .WithPassword("postgres")
             .WithNetwork(_network)
             .WithNetworkAliases("postgres")
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
             .WithWaitStrategy(Wait.ForUnixContainer()
                 .UntilMessageIsLogged("database system is ready to accept connections"))
             .Build();
