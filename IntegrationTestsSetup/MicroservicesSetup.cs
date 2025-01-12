@@ -128,9 +128,9 @@ public class MicroservicesSetup : IAsyncDisposable
         await command.ExecuteNonQueryAsync();
 
         
-        DatabaseOrdersConnectionString = "Host=postgres;Port=5432;Database=orders;Username=postgres;Password=postgres;";
-        DatabaseArticlesConnectionString = "Host=postgres;Port=5432;Database=articles;Username=postgres;Password=postgres;";
-        DatabaseOrganizationConnectionString = "Host=postgres;Port=5432;Database=organizations;Username=postgres;Password=postgres;";
+        DatabaseOrdersConnectionString = "Server=postgres;Port=5432;Database=orders;User Id=postgres;Password=postgres;";
+        DatabaseArticlesConnectionString = "Server=postgres;Port=5432;Database=articles;User Id=postgres;Password=postgres;";
+        DatabaseOrganizationConnectionString = "Server=postgres;Port=5432;Database=organizations;User Id=postgres;Password=postgres;";
     }
 
     public async Task StopAsync()
