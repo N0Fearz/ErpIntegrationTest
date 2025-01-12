@@ -13,6 +13,7 @@ public class MicroservicesSetup : IAsyncDisposable
     private INetwork _network;
 
     public IContainer ArticleService { get; private set; }
+    public IContainer OrderService { get; private set; }
     public IContainer OrganizationService { get; private set; }
     public RabbitMqContainer RabbitMqContainer { get; private set; }
     public string HostName => RabbitMqContainer.Hostname;
@@ -22,7 +23,7 @@ public class MicroservicesSetup : IAsyncDisposable
     public string DatabaseOrganizationConnectionString { get; private set; }
     public string DatabaseArticlesConnectionStringLocal { get; private set; }
     public int ArticleServicePort { get; private set; }
-    private string _articleDbString;
+    public int OrderServicePort { get; private set; }
     public async Task StartServicesAsync()
     {
         _network = new NetworkBuilder()
@@ -40,6 +41,7 @@ public class MicroservicesSetup : IAsyncDisposable
             .WithPortBinding(15672, true)
             .WithNetwork(_network)
             .WithNetworkAliases("rabbitmq")
+            .WithWaitStrategy((Wait.ForUnixContainer().UntilPortIsAvailable(5672)))
             .Build();
         await RabbitMqContainer.StartAsync();
         
@@ -47,29 +49,31 @@ public class MicroservicesSetup : IAsyncDisposable
         Console.WriteLine($"RabbitMQ Port: {RabbitMqContainer.GetMappedPublicPort(5672)}");
         
         PostgresContainer = new PostgreSqlBuilder()
-            .WithPortBinding(5432, true)
+            .WithPortBinding(5432, false)
             .WithDatabase("organizations")
             .WithUsername("postgres")
             .WithPassword("postgres")
             .WithNetwork(_network)
             .WithNetworkAliases("postgres")
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
+            .WithWaitStrategy(Wait.ForUnixContainer()
+                .UntilMessageIsLogged("database system is ready to accept connections"))
             .Build();
         await PostgresContainer.StartAsync();
         await CreateAdditionalDatabasesAsync();
         
         OrganizationService = new ContainerBuilder()
             .WithImage("casgoorman/organizationservice:latest")
-            .WithExposedPort(8080)
+            // .WithExposedPort(8080)
             .WithPortBinding(0, 8080)
             .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Production")
             .WithEnvironment("RabbitMQ__HostName", "rabbitmq")
             .WithEnvironment("RabbitMQ__UserName", "testuser")
             .WithEnvironment("RabbitMQ__Password", "testpassword")
-            .WithEnvironment("ConnectionStrings__OrderDB", DatabaseOrdersConnectionString)
-            .WithEnvironment("ConnectionStrings__ErpDB", DatabaseArticlesConnectionString)
             .WithEnvironment("ConnectionStrings__OrganizationsDB", DatabaseOrganizationConnectionString)
             .WithNetwork(_network)
             .WithNetworkAliases("organizationservice")
+            .WithWaitStrategy((Wait.ForUnixContainer().UntilPortIsAvailable(8080)))
             .Build();
         await OrganizationService.StartAsync();
         ArticleService = new ContainerBuilder()
@@ -81,12 +85,29 @@ public class MicroservicesSetup : IAsyncDisposable
             .WithEnvironment("RabbitMQ__HostName", "rabbitmq")
             .WithEnvironment("RabbitMQ__UserName", "testuser")
             .WithEnvironment("RabbitMQ__Password", "testpassword")
-            .WithEnvironment("ConnectionStrings__ArticleDB", _articleDbString)
+            .WithEnvironment("ConnectionStrings__ArticleDB", DatabaseArticlesConnectionString)
             .WithNetwork(_network)
             .WithNetworkAliases("articleservice")
+            .WithWaitStrategy((Wait.ForUnixContainer().UntilPortIsAvailable(8080)))
             .Build();
         await ArticleService.StartAsync();
         ArticleServicePort = ArticleService.GetMappedPublicPort(8080);
+        OrderService = new ContainerBuilder()
+            .WithImage("casgoorman/orderservice:latest")
+            .WithExposedPort(8080)
+            .WithPortBinding(0, 8080)
+            .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Production")
+            .WithEnvironment("DISABLE_AUTH", "true")
+            .WithEnvironment("RabbitMQ__HostName", "rabbitmq")
+            .WithEnvironment("RabbitMQ__UserName", "testuser")
+            .WithEnvironment("RabbitMQ__Password", "testpassword")
+            .WithEnvironment("ConnectionStrings__OrderDB", DatabaseOrdersConnectionString)
+            .WithNetwork(_network)
+            .WithNetworkAliases("orderservice")
+            .WithWaitStrategy((Wait.ForUnixContainer().UntilPortIsAvailable(8080)))
+            .Build();
+        await OrderService.StartAsync();
+        OrderServicePort = OrderService.GetMappedPublicPort(8080);
     }
     
     private async Task CreateAdditionalDatabasesAsync()
@@ -107,10 +128,9 @@ public class MicroservicesSetup : IAsyncDisposable
         await command.ExecuteNonQueryAsync();
 
         var connectionStrongCorrectHost = adminConnectionString.Replace("127.0.0.1", "postgres");
-        DatabaseOrdersConnectionString = connectionStrongCorrectHost.Replace("organizations", "orders");
-        DatabaseArticlesConnectionString = connectionStrongCorrectHost.Replace("organizations", "articles");
+        DatabaseOrdersConnectionString = connectionStrongCorrectHost.Replace("organizations", "orders") + ";";
+        DatabaseArticlesConnectionString = connectionStrongCorrectHost.Replace("organizations", "articles") + ";";
         DatabaseOrganizationConnectionString = connectionStrongCorrectHost;
-        _articleDbString = DatabaseArticlesConnectionString + ";SearchPath=";
     }
 
     public async Task StopAsync()
