@@ -59,6 +59,7 @@ public class MicroservicesSetup : IAsyncDisposable
                 .UntilMessageIsLogged("database system is ready to accept connections"))
             .Build();
         await PostgresContainer.StartAsync();
+        Task.Delay(TimeSpan.FromSeconds(5)).Wait();
         await CreateAdditionalDatabasesAsync();
         
         OrganizationService = new ContainerBuilder()
