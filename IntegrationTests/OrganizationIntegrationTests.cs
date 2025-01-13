@@ -25,19 +25,22 @@ public class OrganizationIntegrationTests
         const string testMessage = "{\n\"@class\" : \"com.github.aznamier.keycloak.event.provider.EventAdminNotificationMqMsg\",\n\"time\" : 1734471669619,\n\"realmId\" : \"f7976e0d-14ab-4ea0-8a87-032f9c16151f\",\n\"authDetails\" : {\n\"realmId\" : \"d5061ec1-18e9-4430-89fe-068f08c9b5ff\",\n\"realmName\" : \"master\",\n\"clientId\" : \"03a6c6de-20e5-43b5-9bca-da81d4fef626\",\n\"userId\" : \"f4ff4e89-6fe2-45f8-9ecf-384f9bb0ab8d\",\n\"ipAddress\" : \"10.42.0.1\"\n},\n\"resourceType\" : \"ORGANIZATION\",\n\"operationType\" : \"CREATE\",\n\"resourcePath\" : \"organizations/2b36c94f-25c5-4d03-83c6-1429a7371413\",\n\"representation\" : \"{\\\"id\\\":\\\"0ba94660-861a-45af-a01a-344c04fbfc1b\\\",\\\"name\\\":\\\"TestOrganization\\\",\\\"alias\\\":\\\"test1234\\\",\\\"enabled\\\":true,\\\"description\\\":\\\"\\\",\\\"redirectUrl\\\":\\\"\\\",\\\"attributes\\\":{},\\\"domains\\\":[{\\\"name\\\":\\\"idk.com\\\",\\\"verified\\\":false}]}\",\n\"resourceTypeAsString\" : \"ORGANIZATION\"\n}";
 
         // Act 
-        await Task.Delay(5000);
         _keycloakMockMessagePublisher.PublishMessage(
             testMessage, 
             _microservicesSetup.RabbitMqContainer.Hostname, 
             _microservicesSetup.RabbitMqContainer.GetMappedPublicPort(5672)
             );
 
-        // Wait
-        await Task.Delay(TimeSpan.FromSeconds(20));
 
         // Assert
-        bool isProcessed = await CheckIfSchemaExists();
-        await Task.Delay(TimeSpan.FromSeconds(20));
+        
+        bool isProcessed = false;
+        await WaitForConditionAsync(
+            async () => isProcessed = await CheckIfSchemaExists(),
+            TimeSpan.FromSeconds(60),
+            TimeSpan.FromMilliseconds(500)
+        );
+        
         Assert.True(isProcessed, "Het bericht is niet correct verwerkt.");
     }
     
@@ -78,7 +81,6 @@ public class OrganizationIntegrationTests
 
             var result = await command.ExecuteScalarAsync();
 
-            await Task.Delay(5000); // Simuleer DB-check
             // De query retourneert een bool: true als het schema bestaat, anders false.
             return result is bool exists && exists;
         }
@@ -87,5 +89,22 @@ public class OrganizationIntegrationTests
             Console.WriteLine($"Error checking schema existence: {ex.Message}");
             return false;
         }
+    }
+    
+    private static async Task WaitForConditionAsync(Func<Task<bool>> condition, TimeSpan timeout, TimeSpan pollingInterval)
+    {
+        var start = DateTime.UtcNow;
+
+        while (DateTime.UtcNow - start < timeout)
+        {
+            if (await condition())
+            {
+                var duration = DateTime.UtcNow - start;
+                Console.WriteLine($"--> Condition met for test after {duration.TotalSeconds:F2} seconds");
+                return;
+            }
+            await Task.Delay(pollingInterval);
+        }
+        throw new TimeoutException($"--> Condition was not met for test within the timeout period.");
     }
 }
