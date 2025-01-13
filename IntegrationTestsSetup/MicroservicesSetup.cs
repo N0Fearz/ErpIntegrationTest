@@ -1,6 +1,7 @@
 ﻿
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
+using DotNet.Testcontainers.Images;
 using DotNet.Testcontainers.Networks;
 using Npgsql;
 using Testcontainers.RabbitMq;
@@ -74,6 +75,7 @@ public class MicroservicesSetup : IAsyncDisposable
             .WithNetwork(_network)
             .WithNetworkAliases("organizationservice")
             .WithWaitStrategy((Wait.ForUnixContainer().UntilPortIsAvailable(8080)))
+            .WithImagePullPolicy(PullPolicy.Always)
             .Build();
         await OrganizationService.StartAsync();
         ArticleService = new ContainerBuilder()
@@ -89,6 +91,7 @@ public class MicroservicesSetup : IAsyncDisposable
             .WithNetwork(_network)
             .WithNetworkAliases("articleservice")
             .WithWaitStrategy((Wait.ForUnixContainer().UntilPortIsAvailable(8080)))
+            .WithImagePullPolicy(PullPolicy.Always)
             .Build();
         await ArticleService.StartAsync();
         ArticleServicePort = ArticleService.GetMappedPublicPort(8080);
@@ -105,6 +108,7 @@ public class MicroservicesSetup : IAsyncDisposable
             .WithNetwork(_network)
             .WithNetworkAliases("orderservice")
             .WithWaitStrategy((Wait.ForUnixContainer().UntilPortIsAvailable(8080)))
+            .WithImagePullPolicy(PullPolicy.Always)
             .Build();
         await OrderService.StartAsync();
         OrderServicePort = OrderService.GetMappedPublicPort(8080);
