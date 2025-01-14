@@ -16,6 +16,7 @@ public class MicroservicesSetup : IAsyncDisposable
     public IContainer ArticleService { get; private set; }
     public IContainer OrderService { get; private set; }
     public IContainer OrganizationService { get; private set; }
+    public IContainer LoggerService { get; private set; }
     public RabbitMqContainer RabbitMqContainer { get; private set; }
     public string HostName => RabbitMqContainer.Hostname;
     public PostgreSqlContainer PostgresContainer { get; private set; }
@@ -112,6 +113,19 @@ public class MicroservicesSetup : IAsyncDisposable
             .Build();
         await OrderService.StartAsync();
         OrderServicePort = OrderService.GetMappedPublicPort(8080);
+        LoggerService = new ContainerBuilder()
+            .WithImage("casgoorman/loggerservice:latest")
+            .WithExposedPort(8080)
+            .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Production")
+            .WithEnvironment("DISABLE_AUTH", "true")
+            .WithEnvironment("RabbitMQ__HostName", "rabbitmq")
+            .WithEnvironment("RabbitMQ__UserName", "testuser")
+            .WithEnvironment("RabbitMQ__Password", "testpassword")
+            .WithNetwork(_network)
+            .WithNetworkAliases("loggerservice")
+            .WithWaitStrategy((Wait.ForUnixContainer().UntilPortIsAvailable(8080)))
+            .WithImagePullPolicy(PullPolicy.Always)
+            .Build();
     }
     
     private async Task CreateAdditionalDatabasesAsync()
